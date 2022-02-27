@@ -1,5 +1,5 @@
 var Stats = {}
-
+ 
 Stats.timeConvert  = function timeConvert(n) {
     var num = n;
     var hours = (num / 60);

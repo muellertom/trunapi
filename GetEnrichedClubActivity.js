@@ -1,5 +1,5 @@
 async function start() {
-
+ 
   const stravaApi = require('strava-v3');
   const env = require('dotenv');
   env.config();

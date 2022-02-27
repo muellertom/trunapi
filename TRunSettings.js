@@ -1,6 +1,6 @@
 var trun_settings = {}
 trun_settings.DummySuffix = "ClubStats_Date"
-
+ 
 const mappingMainType = [
   { type: "Run", maintype: "Run" },
   { type: "Ride", maintype: "Bike" },
