@@ -18,15 +18,13 @@ async function createDummy(strava) {
   const Activities = await strava.athlete.listActivities({})
   const maxDate = getLatestDummyActivityDate(Activities);
 
-  console.log("Höchstes Dummydatum " + maxDate.toLocaleDateString('en-CA'));
+  console.log("Highest dummy date found  " + maxDate.toLocaleDateString('en-CA'));
 
   if (IsDummyCreateRequired(maxDate, strava) === true) {
     createDummyActivity(maxDate, strava)
   } else {
     console.log("Nothing to do dummy activites exist");
   }
-
-
 
 }
 
@@ -47,7 +45,7 @@ async function createDummyActivity(maxDate, strava) {
     }
 
     var ActivityData = {
-      name: maxDate.toISOString().substring(0,10) + "#" + getDummySuffix(),
+      name: maxDate.toISOString().substring(0,10) + "#" + trun_settings.DummySuffix,
       type: "Run",
       description: "Dummy Activity for date determination",
       elapsed_time: 1,
@@ -89,7 +87,7 @@ function getLatestDummyActivityDate(Activities) {
     DummyEarliest.setDate(DummyEarliest.getDate() - 7);
     aDates.push(DummyEarliest);
 
-    if (Activities[i].name.substring(11, 26) === getDummySuffix()) {
+    if (trun_settings.isDummyActivity(Activities[i])) {
       const ActivityDate = new Date(Activities[i].name.substring(0, 10));
       aDates.push(ActivityDate);
 
@@ -101,9 +99,7 @@ function getLatestDummyActivityDate(Activities) {
 
 }
 
-function getDummySuffix() {
-  return DummySuffix = "ClubStats_Date"
-}
 
 // Call start
+const trun_settings = require('./TRunSettings')
 start();
