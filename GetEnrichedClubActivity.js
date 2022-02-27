@@ -1,5 +1,3 @@
-const { default: strava } = require('strava-v3');
-
 async function start() {
 
   const stravaApi = require('strava-v3');
@@ -57,7 +55,7 @@ function enrichActivies(Activities, Members) {
 
     let oActivity = Activities[i];
 
-    if (isDummyActivity(oActivity) === true) {
+    if (trun_settings.isDummyActivity(oActivity) === true) {
       const ActivityDate = new Date(oActivity.name.substring(0, 10));
       currentDate = ActivityDate;
     }
@@ -65,20 +63,21 @@ function enrichActivies(Activities, Members) {
 
       // new Properties
       oActivity.date = currentDate;
-      oActivity.dummyid = buildId(oActivity);
+      oActivity.dummyid = trun_settings.buildUniqueId(oActivity);
       oActivity.nameconflict = getClubMemberNameConflict(Members, oActivity);
-      oActivity.maintype = getMainType(oActivity).maintype;
+      oActivity.maintype = trun_settings.getMainType(oActivity.type).maintype;
       oActivity.distanceinkm = oActivity.distance / 1000;
-      const maintype_setting = getMainTypeSetting(oActivity.maintype);
+      const maintype_setting = trun_settings.getMainTypeSettings(oActivity.maintype);
       oActivity.cent = oActivity.distanceinkm * maintype_setting.centprokm;
       oActivity.elapsed_time_in_minutes = oActivity.elapsed_time / 60;
       oActivity.moving_time_in_minutes = oActivity.moving_time / 60;
-      oActivity.elapsed_duration = timeConvert(oActivity.elapsed_time_in_minutes);
-      oActivity.moving_time_duration = timeConvert(oActivity.moving_time_in_minutes);
-      oActivity.pace = calcPace(oActivity.moving_time_in_minutes, oActivity.distanceinkm);
+      oActivity.elapsed_duration = stats.timeConvert(oActivity.elapsed_time_in_minutes);
+      oActivity.moving_time_duration = stats.timeConvert(oActivity.moving_time_in_minutes);
+      oActivity.pace = stats.calculatePace(oActivity.moving_time_in_minutes, oActivity.distanceinkm);
       oActivity.minimum_pace_exceeded = false;
       oActivity.maximum_pace_exceeded = false;
-
+      oActivity.kmh = 60 / oActivity.pace;
+      
       if (oActivity.pace > maintype_setting.minimum_pace) {
         oActivity.minimum_pace_exceeded = true;
       }
@@ -97,34 +96,6 @@ function enrichActivies(Activities, Members) {
 
 }
 
-// Suffix for Dummy Activities
-function getDummySuffix() {
-  return DummySuffix = "ClubStats_Date"
-}
-
-// build a unique id as we do not have the stava Activity ID due to data protection laws...
-function buildId(Activity) {
-
-  return Activity.type + "#" + Activity.athlete.firstname + "#" +
-  Activity.athlete.lastname + "#" + Activity.elapsed_time + "#" + Activity.distance + "#" +
-  Activity.date.toLocaleDateString('de');
-
-}
-
-// Is the Activity of our technical user
-function isDummyActivity(Activity) {
-
-  const oDummyUser = getTechnicalUser();
-
-  if (Activity.name.substring(11, 26) === getDummySuffix() ||
-    (Activity.athlete.firstname === oDummyUser.firstname && Activity.athlete.firstname === oDummyUser.lastname)) {
-    return true
-  } else {
-    return false
-  }
-
-}
-
 // gets Club member
 function getClubMemberNameConflict(Members, Activity) {
 
@@ -138,77 +109,7 @@ function getClubMemberNameConflict(Members, Activity) {
   return bNameConflict;
 }
 
-// T.RUN Technical User is unique
-function getTechnicalUser() {
-  return { firstname: "Team", lastname: "R." };
-}
-
-function getMappingMainType() {
-
-  return [
-    { type: "Run", maintype: "Run" },
-    { type: "Ride", maintype: "Bike" },
-    { type: "VirtualRun", maintype: "Run" },
-    { type: "VirtualRide", maintype: "Bike" },
-    { type: "Walk", maintype: "Walking" },
-    { type: "Hike", maintype: "Walking" },
-    { type: "EBikeRide", maintype: "Bike" },
-    { type: "Handcycle", maintype: "Bike" },
-    { type: "Snowshoe", maintype: "Walking" }
-  ]
-}
-
-function getMainType(Activity) {
-
-  var maintype = { type: "Default", maintype: "Others" }; // Default
-  const aMapping = getMappingMainType();
-  for (let i = 0; i < aMapping.length; i++) {
-    if (aMapping[i].type === Activity.type) {
-      maintype = aMapping[i];
-    }
-  }
-
-  return maintype;
-}
-
-function getSettingsMainType() {
-  return [
-      { maintype: "Run", centprokm: 0.20, minimum_pace: 9.5, maximum_pace: 3 },
-      { maintype: "Bike", centprokm: 0.05, minimum_pace: 7, maximum_pace: 2 },
-      { maintype: "Walking", centprokm: 0.20, maximum_pace: 9.5 },
-      { maintype: "Others", centprokm: 0 }
-  ]
-}
-
-function getMainTypeSetting(maintype) {
-  const aMapping = getSettingsMainType();
-  for (let i = 0; i < aMapping.length; i++) {
-    if (aMapping[i].maintype === maintype) {
-      return aMapping[i];
-    }
-  }
-}
-
-function timeConvert(n) {
-  var num = n;
-  var hours = (num / 60);
-  var rhours = Math.floor(hours);
-  var minutes = (hours - rhours) * 60;
-  var rminutes = Math.trunc(minutes);
-  var seconds = n - Math.trunc(n);
-  return rhours + ":" + rminutes + ":" + seconds.toString().substring(2, 4);
-}
-
-function calcPace(minutes, km) {
-  var pace = minutes / km;
-  paceMinutes = Math.floor(pace);
-  paceSeconds = Math.round((pace - paceMinutes) * 60);
-  if (paceSeconds < 10) {
-    paceSeconds = "0" + paceSeconds;
-  }
-
-  return Number.parseFloat(paceMinutes + "." + paceSeconds);
-}
-
 // Call start
+const stats = require('./StatsUtility')
+const trun_settings = require('./TRunSettings')
 start();

@@ -18,7 +18,7 @@ async function createDummy(strava) {
   const Activities = await strava.athlete.listActivities({})
   const maxDate = getLatestDummyActivityDate(Activities);
 
-  console.log("Highest dummy date found  " + maxDate.toLocaleDateString('en-CA'));
+  console.log("Highest dummy date found  " + maxDate.toISOString().substring(0,10));
 
   if (IsDummyCreateRequired(maxDate, strava) === true) {
     createDummyActivity(maxDate, strava)
@@ -68,13 +68,11 @@ async function createDummyActivity(maxDate, strava) {
 function IsDummyCreateRequired(maxDate, strava) {
 
   var bRequired = true;
-
-  if (new Date().toLocaleDateString('de') === maxDate.toLocaleDateString('de')) {
+  if (new Date().toISOString().substring(0,10) === maxDate.toISOString().substring(0,10)) {
     bRequired = false;
   }
 
   return bRequired;
-
 }
 
 function getLatestDummyActivityDate(Activities) {
@@ -82,7 +80,7 @@ function getLatestDummyActivityDate(Activities) {
 
   for (let i = 0; i < Activities.length; i++) {
 
-    // 7 Tage in die Vergangenheit soviele legen wir max an
+    // 7 days into the past thats the maximum amount of dummies we create
     var DummyEarliest = new Date();
     DummyEarliest.setDate(DummyEarliest.getDate() - 7);
     aDates.push(DummyEarliest);
@@ -96,9 +94,7 @@ function getLatestDummyActivityDate(Activities) {
   }
 
   return new Date(Math.max.apply(null, aDates));
-
 }
-
 
 // Call start
 const trun_settings = require('./TRunSettings')
