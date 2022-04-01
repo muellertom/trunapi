@@ -35,7 +35,9 @@ async function createDummyActivity(maxDate, strava) {
   maxDate.setUTCDate(maxDate.getUTCDate() + 1); // since its the highest date that exists start createion 1 day in the future
   maxDate.setUTCHours(23, 59, 59, 999); // at 23:59 at the end of day create dummy acitvity
 
-  while (maxDate.getUTCDate() < currentDate.getUTCDate()) {
+  while (maxDate.getUTCDate() < currentDate.getUTCDate() ||
+         maxDate.getUTCMonth() < currentDate.getUTCMonth() ||
+         maxDate.getUTCFullYear() < currentDate.getUTCFullYear()) {
 
     // no dummy activity for current day Grabber uses that day as default
     // prevent endless loop at all cost due to API limits
