@@ -8,11 +8,11 @@ async function start() {
   const strava = new stravaApi.client(token.access_token);
 
   const Activities = await strava.clubs.listActivities({ id: process.env.STRAVA_CLUB_ID, page: 1, per_page: 200 });
-  let Members = await strava.clubs.listMembers({ id: process.env.STRAVA_CLUB_ID, page: 1, per_page: 200 });
+  const Members = await strava.clubs.listMembers({ id: process.env.STRAVA_CLUB_ID, page: 1, per_page: 200 });
   const Members2 = await strava.clubs.listMembers({ id: process.env.STRAVA_CLUB_ID, page: 2, per_page: 200 });
-  Members.push(Members2);
+  const allMembers = Members.concat(Members2)    
+  const aEnrichedClubMembers = enrichClubMembers(allMembers);
 
-  const aEnrichedClubMembers = enrichClubMembers(Members);
   const aEnrichtedActivity = enrichActivies(Activities, aEnrichedClubMembers);
 
   console.log("Count Activities found " + aEnrichtedActivity.length);

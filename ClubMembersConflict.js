@@ -7,11 +7,10 @@ async function start() {
     const token = await stravaApi.oauth.refreshToken(process.env.STRAVA_REFRESH_TOKEN);
     const strava = new stravaApi.client(token.access_token);
   
-    let Members = await strava.clubs.listMembers({ id: process.env.STRAVA_CLUB_ID, page: 1, per_page: 200 });
+    const Members = await strava.clubs.listMembers({ id: process.env.STRAVA_CLUB_ID, page: 1, per_page: 200 });
     const Members2 = await strava.clubs.listMembers({ id: process.env.STRAVA_CLUB_ID, page: 2, per_page: 200 });
-    Members.push(Members2);
-    
-    const aEnrichedClubMembers = enrichClubMembers(Members);
+    const allMembers = Members.concat(Members2)    
+    const aEnrichedClubMembers = enrichClubMembers(allMembers);
 
     //console.log(aEnrichedClubMembers);
     console.log("Count Members found " + aEnrichedClubMembers.length);
